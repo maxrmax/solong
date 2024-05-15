@@ -6,7 +6,7 @@
 /*   By: mring <mring@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/10 17:05:24 by mring             #+#    #+#             */
-/*   Updated: 2024/05/14 18:54:00 by mring            ###   ########.fr       */
+/*   Updated: 2024/05/15 20:54:56 by mring            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,38 +15,80 @@
 #include <stdbool.h>
 #include <MLX42/MLX42.h>
 
-#define WIDTH 512
-#define HEIGHT 512
+#define WIDTH 1024
+#define HEIGHT 1024
 
-int32_t main(void)
+void	ft_error(void)
+{
+	printf("%s\n", mlx_strerror(mlx_errno));
+	exit(EXIT_FAILURE);
+}
+
+void	ft_key_hook(mlx_key_data_t keydata, void *param)
 {
 	mlx_t		*mlx;
-	xpm_t		*xpm;
-	mlx_image_t	*img;
 
-	mlx = mlx_init(WIDTH, HEIGHT, "MLX42", true);
+	if (!param)
+		return ;
+	mlx = param;
+	if (keydata.key == MLX_KEY_ESCAPE && keydata.action == MLX_PRESS)
+	{
+		mlx_close_window(mlx);
+		// system("ps aux | grep Music.app | awk '{print $2}' | awk 'NR==1 {print}' | xargs kill"); // EXTRA SOUND
+	}
+}
+
+void	ft_loop_hook(void *param)
+{
+	mlx_t		*mlx;
+
+	if (!param)
+		return ;
+	mlx = param;
+	printf("WIDTH: %d | HEIGHT: %d\n", mlx->width, mlx->height);
+}
+// int32_t	bg_image(mlx_t mlx, mlx_texture_t bg_image)
+// {
+// 	// bgimage = bg_image(mlx, texture);
+// }
+
+int32_t	main(void)
+{
+	// system("open -j -g /Users/mring/projects/solong/assets/sound/Parabola.mp3"); // EXTRA SOUND
+	mlx_t			*mlx;
+	mlx_texture_t	*texture;
+	mlx_image_t		*image;
+
+	mlx = mlx_init(WIDTH, HEIGHT, "MLX42", false);
 	if (!mlx)
-		return (1);
-	xpm = mlx_load_xpm42("./assets/space_background.xpm");
-	printf("1\n");
-	if (!xpm)
-		return (1);
-	img = mlx_texture_to_image(mlx, &xpm->texture);
-	printf("2\n");
-	if (!img)
-		return (1);
-	if (mlx_image_to_window(mlx, img, 0, 0) < 0)
-		return (1);
+		ft_error();
+	texture = mlx_load_png("./assets/background/Green_Nebula.png");
+	if (!texture)
+	{
+		mlx_delete_texture(texture);
+		ft_error();
+	}
+	image = mlx_texture_to_image(mlx, texture);
+	mlx_delete_texture(texture);
+	mlx_new_image(mlx, WIDTH, HEIGHT);
+	if (!image || mlx_image_to_window(mlx, image, 0, 0) < 0)
+		ft_error();
+	mlx_resize_image(image, WIDTH, HEIGHT);
+	mlx_key_hook(mlx, ft_key_hook, mlx);
+	mlx_loop_hook(mlx, ft_loop_hook, mlx);
 	mlx_loop(mlx);
-	printf("3\n");
-	mlx_delete_image(mlx, img);
-	printf("4\n");
-	mlx_delete_xpm42(xpm);
-	printf("5\n");
-	mlx_terminate(mlx);
-	printf("6\n");
 	return (0);
 }
+
+// void load_sprites(mlx_t *mlx, GameSprites *sprites, int tile_width, int tile_height) {
+//     load_and_scale_sprite(mlx, &sprites->wall, "/Users/abhudulo/Desktop/c_projects/so_long_p/assets/sprites/rock_in_water_01.png", tile_width, tile_height);
+//     load_and_scale_sprite(mlx, &sprites->collectible, "/Users/abhudulo/Desktop/c_projects/so_long_p/assets/sprites/Egg_item.png", tile_width, tile_height);
+//     load_and_scale_sprite(mlx, &sprites->exit, "/Users/abhudulo/Desktop/c_projects/so_long_p/assets/sprites/Free_Chicken_House.png", tile_width, tile_height);
+//     load_and_scale_sprite(mlx, &sprites->player, "/Users/abhudulo/Desktop/c_projects/so_long_p/assets/sprites/cat_0.png", tile_width, tile_height);
+//     // Ensure you also load the floor sprite correctly
+//     load_and_scale_sprite(mlx, &sprites->floor, "/Users/abhudulo/Desktop/c_projects/so_long_p/assets/sprites/Basic_Grass_Biom_things.png", tile_width, tile_height);
+//     printf("All sprites loaded successfully.\n");
+// }
 
 /*
 open, close, read, write,
